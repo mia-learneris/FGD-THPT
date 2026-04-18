@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Khảo sát Chuẩn bị FGD — Học Cùng AI THPT</title>
+<style>
+  :root {
+    --ink: #1a1a1a;
+    --ink2: #4a4a4a;
+    --ink3: #888;
+    --line: #e0e0e0;
+    --bg: #fafaf8;
+    --card: #ffffff;
+    --accent: #2563eb;
+    --accent-soft: #eff6ff;
+    --warn: #f59e0b;
+    --success: #16a34a;
+    --radius: 10px;
+    --shadow: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    font-size: 15px;
+    line-height: 1.65;
+    padding: 0 0 60px;
+  }
+  .top-bar {
+    background: var(--ink);
+    color: #fff;
+    padding: 14px 32px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .top-bar .logo { font-size: 13px; opacity: .55; letter-spacing: .05em; }
+  .top-bar .title { font-size: 14px; font-weight: 500; }
+  .top-bar .prog-wrap { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+  .prog-bar { width: 120px; height: 4px; background: rgba(255,255,255,.2); border-radius: 2px; }
+  .prog-fill { height: 100%; background: #60a5fa; border-radius: 2px; transition: width .3s; width: 0%; }
+  .prog-label { font-size: 12px; opacity: .6; min-width: 36px; text-align: right; }
+
+  .hero {
+    background: var(--card);
+    border-bottom: 1px solid var(--line);
+    padding: 40px 32px 32px;
+    max-width: 720px;
+    margin: 0 auto;
+  }
+  .hero-tag {
+    font-size: 11px;
+    letter-spacing: .08em;
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+  }
+  .hero h1 { font-size: 22px; font-weight: 600; margin-bottom: 10px; }
+  .hero p { font-size: 14px; color: var(--ink2); max-width: 560px; }
+  .hero-meta {
+    display: flex;
+    gap: 20px;
+    margin-top: 18px;
+    flex-wrap: wrap;
+  }
+  .hero-meta span {
+    font-size: 12px;
+    color: var(--ink3);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .form-body { max-width: 720px; margin: 0 auto; padding: 0 32px; }
+
+  .section-header {
+    margin: 36px 0 16px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+  }
+  .sec-letter {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .1em;
+    color: var(--accent);
+    background: var(--accent-soft);
+    padding: 3px 8px;
+    border-radius: 4px;
+  }
+  .sec-name { font-size: 15px; font-weight: 600; color: var(--ink); }
+  .sec-desc { font-size: 12px; color: var(--ink3); margin-top: 2px; }
+
+  .q-block {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 20px 22px;
+    margin-bottom: 12px;
+    box-shadow: var(--shadow);
+    transition: border-color .15s;
+  }
+  .q-block:focus-within { border-color: #93c5fd; }
+
+  .q-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 4px;
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+  }
+  .q-num { color: var(--ink3); font-weight: 400; flex-shrink: 0; }
+  .q-hint { font-size: 12px; color: var(--ink3); margin-bottom: 12px; }
+
+  .opts { display: flex; flex-direction: column; gap: 7px; }
+  .opt {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 9px 12px;
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    cursor: pointer;
+    transition: background .1s, border-color .1s;
+    user-select: none;
+  }
+  .opt:hover { background: var(--accent-soft); border-color: #bfdbfe; }
+  .opt input { margin-top: 2px; flex-shrink: 0; accent-color: var(--accent); }
+  .opt label { font-size: 13.5px; color: var(--ink); cursor: pointer; line-height: 1.5; }
+  .opt.checked { background: var(--accent-soft); border-color: #93c5fd; }
+
+  .opts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+  @media (max-width: 520px) { .opts-grid { grid-template-columns: 1fr; } }
+
+  textarea {
+    width: 100%;
+    padding: 10px 13px;
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    font-family: inherit;
+    font-size: 13.5px;
+    color: var(--ink);
+    background: #fdfdfd;
+    resize: vertical;
+    min-height: 80px;
+    transition: border-color .15s;
+    line-height: 1.6;
+  }
+  textarea:focus { outline: none; border-color: #93c5fd; }
+  textarea::placeholder { color: var(--ink3); }
+
+  .scale-wrap { margin-top: 4px; }
+  .scale-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--ink3);
+    margin-bottom: 8px;
+  }
+  .scale-row { display: flex; gap: 6px; }
+  .scale-opt {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+  }
+  .scale-opt input { accent-color: var(--accent); }
+  .scale-opt span {
+    font-size: 11px;
+    color: var(--ink3);
+    font-weight: 500;
+  }
+  .scale-bubble {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1.5px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all .12s;
+    color: var(--ink2);
+  }
+  .scale-bubble:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+  .scale-bubble.sel { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+  .rank-list { display: flex; flex-direction: column; gap: 6px; margin-top: 4px; }
+  .rank-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    background: var(--card);
+    cursor: grab;
+    user-select: none;
+    transition: box-shadow .12s, opacity .12s;
+  }
+  .rank-item:active { cursor: grabbing; box-shadow: 0 4px 12px rgba(0,0,0,.12); }
+  .rank-item.drag-over { border-color: var(--accent); background: var(--accent-soft); }
+  .rank-handle { color: var(--ink3); font-size: 14px; flex-shrink: 0; }
+  .rank-pos {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .rank-text { font-size: 13.5px; color: var(--ink); }
+
+  .footer-bar {
+    max-width: 720px;
+    margin: 32px auto 0;
+    padding: 0 32px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .btn-submit {
+    padding: 11px 28px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .12s, transform .1s;
+  }
+  .btn-submit:hover { background: #1d4ed8; }
+  .btn-submit:active { transform: scale(.98); }
+  .btn-export {
+    padding: 11px 22px;
+    background: var(--card);
+    color: var(--ink);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background .12s;
+  }
+  .btn-export:hover { background: var(--bg); }
+
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--ink);
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: all .25s;
+    pointer-events: none;
+    z-index: 999;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+  .toast.ok { background: var(--success); }
+  .toast.warn { background: var(--warn); color: #111; }
+
+  .required { color: #ef4444; margin-left: 2px; }
+  .char-count { font-size: 11px; color: var(--ink3); text-align: right; margin-top: 4px; }
+  .divider { border: none; border-top: 1px solid var(--line); margin: 8px 0 4px; }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <div>
+    <div class="logo">LEARNERIS · HỌC CÙNG AI</div>
+    <div class="title">Khảo sát Giáo viên — Năm học 2025–2026</div>
+  </div>
+  <div class="prog-wrap">
+    <div class="prog-bar"><div class="prog-fill" id="progFill"></div></div>
+    <div class="prog-label" id="progLabel">0%</div>
+  </div>
+</div>
+
+<div class="hero">
+  <div class="hero-tag">Screening Survey · Trước FGD</div>
+  <h1>Thầy/cô thấy chương trình AI này thế nào?</h1>
+  <p>Mình muốn nghe thật sự từ thầy/cô sau một năm dạy thử. Không có câu trả lời đúng hay sai — mọi góc nhìn đều có giá trị để cải thiện chương trình. Mất khoảng 10–15 phút để điền.</p>
+  <div class="hero-meta">
+    <span>⏱ ~12 phút</span>
+    <span>🔒 Bảo mật — chỉ dùng nội bộ</span>
+    <span>📅 Điền trước buổi FGD 1–2 tuần</span>
+  </div>
+</div>
+
+<form class="form-body" id="mainForm" onsubmit="return false;">
+
+  <!-- SECTION A -->
+  <div class="section-header">
+    <span class="sec-letter">A</span>
+    <div>
+      <div class="sec-name">Một chút về thầy/cô</div>
+      <div class="sec-desc">Để mình hiểu hơn điểm xuất phát của thầy/cô trước khi dạy chương trình này</div>
+    </div>
+  </div>
+
+  <div class="q-block">
+    <div class="q-label"><span class="q-num">A1</span> Trước khi dạy chương trình AI này, thầy/cô chủ yếu dạy môn gì?</div>
+    <div class="opts opts-grid" id="a1">
+      <div class="opt"><input type="radio" name="a1" value="Tin học / Công nghệ" id="a1_1"><label for="a1_1">Tin học / Công nghệ</label></div>
+      <div class="opt"><input type="radio" name="a1" value="Toán / Khoa học tự nhiên" id="a1_2"><label for="a1_2">Toán / Khoa học tự nhiên</label></div>
+      <div class="opt"><input type="radio" name="a1" value="Khoa học xã hội / Ngữ văn" id="a1_3"><label for="a1_3">Khoa học xã hội / Ngữ văn</label></div>
+      <div class="opt"><input type="radio" name="a1" value="Môn khác" id="a1_4"><label for="a1_4">Môn khác</label></div>
+    </div>
+  </div>
+
+  <div class="q-block">
+    <div class="q-label"><span class="q-num">A2</span> Trước khi bắt đầu, thầy/cô biết gì về AI?</div>
+    <div class="opts">
+      <div class="opt"><input type="radio" name="a2" value="Gần như chưa biết gì" id="a2_1"><label for="a2_1">Gần như chưa biết gì — chỉ nghe tên trên báo</label></div>
+      <div class="opt"><input type="radio" name="a2" value="Biết sơ qua" id="a2_2"><label for="a2_2">Biết sơ — đã dùng vài công cụ AI cơ bản như ChatGPT</label></div>
+      <div class="opt"><input type="radio" name="a2" value="Khá hiểu" id="a2_3"><label for="a2_3">Khá hiểu — đã tự tìm hiểu hoặc được tập huấn trước đó</label></div>
+    </div>
+  </div>
+
+  <div class="q-block">
+    <div class="q-label"><span class="q-num">A3</span> Thầy/cô dạy bao nhiêu lớp và bao nhiêu học sinh trong chương trình này?</div>
+    <textarea name="a3" placeholder="Ví dụ: 2 lớp, khoảng 70 học sinh tổng cộng…" maxlength="300" oninput="countChars(this)"></textarea>
+    <div class="char-count">0 / 300</div>
+  </div>
+
+  <div class="q-block">
+    <div class="q-label"><span class="q-num">A4</span> Trước khi dạy tiết đầu tiên, thầy/cô được chuẩn bị như thế nào?</div>
+    <div class="q-hint">Ví dụ: buổi tập huấn, tài liệu hướng dẫn, nhóm chat hỗ trợ, hay tự mày mò…</div>
+    <textarea name="a4" placeholder="Kể ngắn gọn thôi ạ…" maxlength="400" oninput="countChars(this)"></textarea>
+    <div class="char-count">0 / 400</div>
+  </div>
+
+  <!-- SECTION B -->
+  <div class="section-header">
+    <span class="sec-letter">B</span>
+    <div>
+      <div class="sec-name">Chuyện chuẩn bị bài và dạy trên lớp</div>
+      <div class="sec-desc">Muốn hiểu thầy/cô thực sự mất bao nhiêu công và gặp khó ở đâu</div>
+    </div>
+  </div>
+
+  <div class="q-block">
+    <div class="q-label"><span class="q-num">B1</span> Trung bình thầy/cô cần bao lâu để chuẩn bị cho một tiết dạy?</div>
+    <div class="opts">
+      <div class="opt"><input type="radio" name="b1" value="<15 phút" id="b1_1"><label for="b1_1">Dưới 15 phút — dùng tài liệu gần như nguyên bản</label></div>
+      <div class="opt"><input type="radio" name="b1" value="15-30 phút" id="b1_2"><label for="b1_2">15–30 phút — đọc qua, điều chỉnh một vài chỗ</label></div>
+      <div class="opt"><input type="radio" name="b1" value="30-60 phút" id="b1_3"><label for="b1_3">30–60 phút — cần nghiên cứu thêm hoặc chỉnh sửa nhiều</label></div>
+      <div class="opt"><input type="radio" name="b1" value=">1 tiếng" id="b1_4"><label for="b1_4">Hơn 1 tiếng — phải tự tìm hiểu thêm nhiều nội dung</label></div>
+    </div>
+  </div>
+
+  <div class="q-block">
+    <div class="q-label"><span class="q-num">B2</span> Phần nào trong tài liệu thầy/cô thấy khó nhất để truyền đạt cho học sinh?</div>
+    <div class="q-hint">Chọn tất cả những gì phù hợp</div>
+    <div class="opts" id="b2">
+      <div class="opt"><input type="checkbox" name="b2" value="Khái niệm kỹ thuật" id="b2_1"><label for="b2_1">Khái niệm kỹ thuật — máy học, mô hình, dữ liệu…</label></div>
+      <div class="opt"><input type="checkbox" name="b2" value="Ví dụ thực tế" id="b2_2"><label for="b2_2">Ví dụ thực tế — khó tìm ví dụ sát với bối cảnh Việt Nam</label></div>
+      <div class="opt"><input type="checkbox" name="b2" value="Kết nối cuộc sống" id="b2_3"><label for="b2_3">Kết nối với cuộc sống hằng ngày của học sinh</label></div>
+      <div class="opt"><input type="checkbox" name="b2" value="Hoạt động nhóm" id="b2_4"><label for="b2_4">Hoạt động nhóm — khó quản lý trong lớp đông</label></div>
+      <div class="opt"><input type="checkbox" name="b2" value="Công cụ kỹ thuật số" id="b2_5"><label for="b2_5">Công cụ trên nền tảng — học sinh hoặc mình gặp khó khi dùng</label></div>
+      <div class="opt"><input type="checkbox" name="b2" value="Khác" id="b2_6"><label for="b2_6">Phần khác…</label></div>
+    </div>
+    <textarea name="b2_other" style="margin-top:8px" placeholder="Nếu chọn 'phần khác', mô tả thêm nhé…" maxlength="300" oninput="countChars(this)"></textarea>
+    <div class="char-count">0 / 300</div>
+  </div>
+
+  <div class="q-block">
+    <div class="q-label"><span class="q-num">B3</span> Tài liệu có đủ để thầy/cô bước vào lớp mà không cần tìm thêm gì ngoài không?</div>
+    <div class="opts">
+      <div class="opt"><input type="radio" name="b3" value="Đủ hoàn toàn" id="b3_1"><label for="b3_1">Đủ hoàn toàn — dùng thẳng không cần bổ sung</label></div>
+      <div class="opt"><input type="radio" name="b3" value="Phần lớn đủ" id="b3_2"><label for="b3_2">Phần lớn đủ — thỉnh thoảng cần tra thêm một chút</label></div>
+      <div class="opt"><input type="radio" name="b3" value="Thường thiếu" id="b3_3"><label for="b3_3">Thường thiếu — hay phải tự tìm thêm tài liệu ngoài</label></div>
+    </div>
+  </div>
+
+  <!-- SECTION C -->
+  <div class="section-header">
+    <span class="sec-letter">C</span>
+    <div>
+      <div class="sec-name">Nội dung chương trình</div>
+      <div class="sec-desc">Thầy/cô thấy cái gì hay, cái gì còn cần chỉnh</div>
+    </div>
+  </div>
+
+  <div class="q-block">
+    <div class="q-label"><span class="q-num">C1</span> Kéo để xếp hạng các chủ đề theo mức độ học sinh phản ứng tốt nhất</div>
+    <div class="q-hint">Kéo lên trên = học sinh thích / tiếp nhận tốt hơn</div>
+    <div class="rank-list" id="rankC1">
+      <div class="rank-item" draggable="true" data-val="AI là gì — nhận diện AI trong cuộc sống"><div class="rank-handle">⠿</div><div class="rank-pos">1</div><div class="rank-text">AI là gì — nhận diện AI trong cuộc sống</div></div>
+      <div class="rank-item" draggable="true" data-val="Máy học và dữ liệu"><div class="rank-handle">⠿</div><div class="rank-pos">2</div><div class="rank-text">Máy học và dữ liệu</div></div>
+      <div class="rank-item" draggable="true" data-val="Đạo đức AI và tác động xã hội"><div class="rank-handle">⠿</div><div class="rank-pos">3</div><div class="rank-text">Đạo đức AI và tác động xã hội</div></div>
+      <div class="rank-item" draggable="true" data-val="Thực hành với công cụ AI — prompt và worksheet"><div class="rank-handle">⠿</div><div class="rank-pos">4</div><div class="rank-text">Thực hành với công cụ AI — prompt và worksheet</div></div>
+      <div class="rank-item" draggable="true" data-val="Sáng tạo ý tưởng và thiết kế sản phẩm AI"><div class="rank-handle">⠿</div><div class="rank-pos">5</div><div class="rank-text">Sáng tạo ý tưởng và thiết kế sản phẩm AI</div></div>
+    </div>
+  </div>
+
+  <div class="q-block">
+    <div class="q-label"><span class="q-num">C2</span> Có bài nào thầy/cô thấy nằm ngoài tầm của học sinh lớp 10 không — quá khó hoặc quá đơn giản?</div>
+    <textarea name="c2" placeholder="Ví dụ: Bài X về Y — học sinh chưa đủ nền tảng, hoặc ngược lại quá cơ bản với nhiều em…" maxlength="500" oninput="countChars(this)"></textarea>
+    <div class="char-count">0 / 500</div>
+  </div>
+
+  <div class="q-block">
+    <div class="q-label"><span class="q-num">C3</span> Theo thầy/cô, chương trình còn thiếu điều gì quan trọng mà học sinh THPT cần biết về AI?</div>
+    <textarea name="c3" placeholder="Ghi tự do — không cần ngắn gọn hay đúng form…" maxlength="500" oninput="countChars(this)"></textarea>
+    <div class="char-count">0 / 500</div>
+  </div>
+
+  <!-- SECTION D -->
+  <div class="section-header">
+    <span class="sec-letter">D</span>
+    <div>
+      <div class="sec-name">Nền tảng Learneris</div>
+      <div class="sec-desc">Công cụ nào thực sự được dùng, công cụ nào bị bỏ qua</div>
+    </div>
+  </div>
+
+  <div class="q-block">
+    <div class="q-label"><span class="q-num">D1</span> Kéo để xếp hạng các công cụ theo mức độ thực sự được dùng trong tiết học</div>
+    <div class="q-hint">Kéo lên trên = dùng thường xuyên / hiệu quả hơn</div>
+    <div class="rank-list" id="rankD1">
+      <div class="rank-item" draggable="true" data-val="Slide bài giảng"><div class="rank-handle">⠿</div><div class="rank-pos">1</div><div class="rank-text">Slide bài giảng</div></div>
+      <div class="rank-item" draggable="true" data-val="Worksheet — phiếu học tập"><div class="rank-handle">⠿</div><div class="rank-pos">2</div><div class="rank-text">Worksheet — phiếu học tập</div></div>
+      <div class="rank-item" draggable="true" data-val="Quiz — bài kiểm tra nhanh"><div class="rank-handle">⠿</div><div class="rank-pos">3</div><div class="rank-text">Quiz — bài kiểm tra nhanh</div></div>
+      <div class="rank-item" draggable="true" data-val="Tài liệu giáo viên — lesson plan"><div class="rank-handle">⠿</div><div class="rank-pos">4</div><div class="rank-text">Tài liệu giáo viên — lesson plan</div></div>
+      <div class="rank-item" draggable="true" data-val="Bài tập về nhà và dự án"><div class="rank-handle">⠿</div><div class="rank-pos">5</div><div class="rank-text">Bài tập về nhà và dự án</div></div>
+    </div>
+  </div>
+
+  <div class="q-block">
+    <div class="q-label"><span class="q-num">D2</span> Trong năm học, thầy/cô gặp sự cố kỹ thuật nào đáng kể không?</div>
+    <div class="q-hint">Chọn tất cả những gì đã xảy ra</div>
+    <div class="opts" id="d2">
+      <div class="opt"><input type="checkbox" name="d2" value="HS không đăng nhập được" id="d2_1"><label for="d2_1">Học sinh không đăng nhập được vào nền tảng</label></div>
+      <div class="opt"><input type="checkbox" name="d2" value="Quiz / worksheet lỗi" id="d2_2"><label for="d2_2">Quiz hoặc worksheet không load được, hoặc bị mất dữ liệu</label></div>
+      <div class="opt"><input type="checkbox" name="d2" value="Slide không hiển thị đúng" id="d2_3"><label for="d2_3">Slide không hiển thị đúng trên màn hình lớp</label></div>
+      <div class="opt"><input type="checkbox" name="d2" value="Chấm điểm sai" id="d2_4"><label for="d2_4">Kết quả chấm điểm không chính xác hoặc không ghi lại được</label></div>
+      <div class="opt"><input type="checkbox" name="d2" value="Mạng / thiết bị yếu" id="d2_5"><label for="d2_5">Mạng hoặc thiết bị của trường không đủ đáp ứng</label></div>
+      <div class="opt"><input type="checkbox" name="d2" value="Không có sự cố" id="d2_6"><label for="d2_6">Không có sự cố đáng kể</label></div>
+    </div>
+  </div>
+
+  <div class="q-block">
+    <div class="q-label"><span class="q-num">D3</span> Phần nào của nền tảng giúp thầy/cô tiết kiệm thời gian nhất?</div>
+    <textarea name="d3" placeholder="Ví dụ: quiz tự chấm điểm, có sẵn tài liệu không cần soạn…" maxlength="400" oninput="countChars(this)"></textarea>
+    <div class="char-count">0 / 400</div>
+  </div>
+
+  <!-- SECTION E -->
+  <div class="section-header">
+    <span class="sec-letter">E</span>
+    <div>
+      <div class="sec-name">Học sinh</div>
+      <div class="sec-desc">Thầy/cô thấy gì từ phía các em trong năm vừa rồi</div>
+    </div>
+  </div>
+
+  <div class="q-block">
+    <div class="q-label"><span class="q-num">E1</span> Nhìn chung, học sinh trong lớp hào hứng với chương trình này ở mức nào?</div>
+    <div class="scale-wrap">
+      <div class="scale-labels"><span>Thờ ơ, không quan tâm</span><span>Rất hào hứng, chủ động</span></div>
+      <div class="scale-row" id="scaleE1">
+        <div class="scale-opt"><div class="scale-bubble" onclick="selectScale('e1',1,this)">1</div></div>
+        <div class="scale-opt"><div class="scale-bubble" onclick="selectScale('e1',2,this)">2</div></div>
+        <div class="scale-opt"><div class="scale-bubble" onclick="selectScale('e1',3,this)">3</div></div>
+        <div class="scale-opt"><div class="scale-bubble" onclick="selectScale('e1',4,this)">4</div></div>
+        <div class="scale-opt"><div class="scale-bubble" onclick="selectScale('e1',5,this)">5</div></div>
+      </div>
+    </div>
+    <input type="hidden" name="e1" id="e1_val">
+  </div>
+
+  <div class="q-block">
+    <div class="q-label"><span class="q-num">E2</span> Nhóm học sinh nào có xu hướng khó theo kịp chương trình nhất?</div>
+    <div class="q-hint">Chọn tất cả những gì thầy/cô quan sát thấy</div>
+    <div class="opts" id="e2">
+      <div class="opt"><input type="checkbox" name="e2" value="Ít tiếp xúc công nghệ" id="e2_1"><label for="e2_1">Học sinh ít tiếp xúc với công nghệ từ nhỏ</label></div>
+      <div class="opt"><input type="checkbox" name="e2" value="Học lực trung bình trở xuống" id="e2_2"><label for="e2_2">Học sinh có học lực trung bình trở xuống</label></div>
+      <div class="opt"><input type="checkbox" name="e2" value="Nhút nhát, ít tham gia" id="e2_3"><label for="e2_3">Học sinh nhút nhát, ít tham gia thảo luận</label></div>
+      <div class="opt"><input type="checkbox" name="e2" value="Không có nhóm cụ thể" id="e2_4"><label for="e2_4">Không có nhóm rõ ràng — khá đồng đều</label></div>
+    </div>
+    <textarea name="e2_other" style="margin-top:8px" placeholder="Thêm gì nữa không ạ?" maxlength="300" oninput="countChars(this)"></textarea>
+    <div class="char-count">0 / 300</div>
+  </div>
+
+  <div class="q-block">
+    <div class="q-label"><span class="q-num">E3</span> Thầy/cô có thấy học sinh áp dụng kiến thức từ môn này ra ngoài giờ học không?</div>
+    <div class="q-hint">Ví dụ: tự dùng AI tool, đặt câu hỏi về AI trong môn khác, kể chuyện với gia đình…</div>
+    <textarea name="e3" placeholder="Nếu có, kể một ví dụ cụ thể nhé — dù nhỏ cũng được…" maxlength="500" oninput="countChars(this)"></textarea>
+    <div class="char-count">0 / 500</div>
+  </div>
+
+  <!-- SECTION F -->
+  <div class="section-header">
+    <span class="sec-letter">F</span>
+    <div>
+      <div class="sec-name">Nhìn lại cả năm</div>
+      <div class="sec-desc">Câu hỏi mở — thầy/cô nói thật nhé</div>
+    </div>
+  </div>
+
+  <div class="q-block">
+    <div class="q-label"><span class="q-num">F1</span> Nếu một đồng nghiệp ở trường khác hỏi "chương trình AI này dạy thế nào?", thầy/cô sẽ nói gì?</div>
+    <textarea name="f1" placeholder="Không cần ngắn gọn, cứ nói tự nhiên như đang trả lời bạn bè…" maxlength="600" oninput="countChars(this)"></textarea>
+    <div class="char-count">0 / 600</div>
+  </div>
+
+  <div class="q-block">
+    <div class="q-label"><span class="q-num">F2</span> Điều thầy/cô muốn đội ngũ Learneris biết nhất — điều chưa có dịp nói?</div>
+    <textarea name="f2" placeholder="Bất cứ điều gì…" maxlength="600" oninput="countChars(this)"></textarea>
+    <div class="char-count">0 / 600</div>
+  </div>
+
+  <div class="footer-bar">
+    <button class="btn-submit" onclick="submitForm()">Gửi câu trả lời</button>
+    <button class="btn-export" onclick="exportCSV()" style="display:none">Tải xuống CSV</button>
+    <span style="font-size:12px;color:var(--ink3)">Câu trả lời được lưu tạm trong trình duyệt</span>
+  </div>
+</form>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ---- Ranking drag & drop ----
+function initRank(id) {
+  const list = document.getElementById(id);
+  let dragged = null;
+  list.querySelectorAll('.rank-item').forEach(item => {
+    item.addEventListener('dragstart', e => { dragged = item; setTimeout(() => item.style.opacity = '.4', 0); });
+    item.addEventListener('dragend', () => { item.style.opacity = '1'; updatePos(id); });
+    item.addEventListener('dragover', e => { e.preventDefault(); const r = item.getBoundingClientRect(); if (e.clientY < r.top + r.height/2) list.insertBefore(dragged, item); else list.insertBefore(dragged, item.nextSibling); });
+    item.addEventListener('dragenter', () => item.classList.add('drag-over'));
+    item.addEventListener('dragleave', () => item.classList.remove('drag-over'));
+    item.addEventListener('drop', () => item.classList.remove('drag-over'));
+  });
+}
+function updatePos(id) {
+  document.querySelectorAll(`#${id} .rank-pos`).forEach((el, i) => el.textContent = i+1);
+  updateProgress();
+}
+initRank('rankC1');
+initRank('rankD1');
+
+// ---- Scale ----
+const scaleVals = {};
+function selectScale(name, val, el) {
+  scaleVals[name] = val;
+  document.getElementById(name+'_val').value = val;
+  el.closest('.scale-row').querySelectorAll('.scale-bubble').forEach(b => b.classList.remove('sel'));
+  el.classList.add('sel');
+  updateProgress();
+}
+
+// ---- Option styling ----
+document.querySelectorAll('.opt input').forEach(inp => {
+  inp.addEventListener('change', () => {
+    if (inp.type === 'radio') {
+      document.querySelectorAll(`input[name="${inp.name}"]`).forEach(r => r.closest('.opt').classList.remove('checked'));
+    }
+    inp.closest('.opt').classList.toggle('checked', inp.checked);
+    updateProgress();
+  });
+});
+
+// ---- Progress ----
+function updateProgress() {
+  const fields = ['a1','a2','b1','b3','e1_val'];
+  let filled = 0;
+  fields.forEach(f => { if (document.querySelector(`[name="${f}"]:checked`) || document.getElementById(f)?.value) filled++; });
+  const textareas = document.querySelectorAll('textarea');
+  textareas.forEach(t => { if (t.value.trim().length > 10) filled++; });
+  const total = fields.length + textareas.length;
+  const pct = Math.round(filled/total*100);
+  document.getElementById('progFill').style.width = pct+'%';
+  document.getElementById('progLabel').textContent = pct+'%';
+}
+
+// ---- Char count ----
+function countChars(el) {
+  const counter = el.nextElementSibling;
+  if (counter && counter.classList.contains('char-count')) {
+    counter.textContent = el.value.length + ' / ' + el.getAttribute('maxlength');
+  }
+  updateProgress();
+}
+
+// ---- Collect data ----
+function collectData() {
+  const out = {};
+  // Radios
+  document.querySelectorAll('input[type=radio]:checked').forEach(r => out[r.name] = r.value);
+  // Checkboxes
+  const cbGroups = {};
+  document.querySelectorAll('input[type=checkbox]:checked').forEach(c => {
+    if (!cbGroups[c.name]) cbGroups[c.name] = [];
+    cbGroups[c.name].push(c.value);
+  });
+  Object.keys(cbGroups).forEach(k => out[k] = cbGroups[k].join(' | '));
+  // Textareas
+  document.querySelectorAll('textarea[name]').forEach(t => out[t.name] = t.value.trim());
+  // Scale
+  out['e1'] = document.getElementById('e1_val').value;
+  // Rankings
+  out['c1_ranking'] = Array.from(document.querySelectorAll('#rankC1 .rank-item')).map(i => i.dataset.val).join(' > ');
+  out['d1_ranking'] = Array.from(document.querySelectorAll('#rankD1 .rank-item')).map(i => i.dataset.val).join(' > ');
+  out['timestamp'] = new Date().toLocaleString('vi-VN');
+  return out;
+}
+
+function showToast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + type;
+  setTimeout(() => t.className = 'toast', 3000);
+}
+
+// ---- CẤU HÌNH — dán Web App URL từ Apps Script vào đây ----
+const SHEET_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbzpn6kevK5f4aY7XFrfcSudWwHKCsS6NEJeBzaW509PZNwtHUpwxS7C7I3xFaGUqq_AGw/exec';
+
+// ---- Submit — gửi lên Google Sheets + lưu local backup ----
+async function submitForm() {
+  const data = collectData();
+  data.id = Date.now();
+
+  if (SHEET_WEBHOOK_URL === 'https://script.google.com/macros/s/AKfycbzpn6kevK5f4aY7XFrfcSudWwHKCsS6NEJeBzaW509PZNwtHUpwxS7C7I3xFaGUqq_AGw/exec') {
+    showToast('⚠ Chưa cấu hình webhook URL', '');
+    return;
+  }
+
+  const btn = document.querySelector('.btn-submit');
+  const origText = btn.textContent;
+  btn.textContent = 'Đang gửi…';
+  btn.disabled = true;
+  btn.style.opacity = '.7';
+
+  try {
+    await fetch(SHEET_WEBHOOK_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify(data)
+    });
+
+    const backup = JSON.parse(localStorage.getItem('fgd_survey_backup') || '[]');
+    backup.push({ ...data, sent: true, sentAt: new Date().toISOString() });
+    localStorage.setItem('fgd_survey_backup', JSON.stringify(backup));
+
+    btn.textContent = '✓ Đã gửi!';
+    btn.style.background = 'var(--success)';
+    showToast('✓ Câu trả lời đã gửi về team Learneris!', 'ok');
+    document.getElementById('progFill').style.width = '100%';
+    document.getElementById('progLabel').textContent = '100%';
+    document.querySelector('.btn-export').style.display = 'inline-block';
+
+  } catch (err) {
+    const backup = JSON.parse(localStorage.getItem('fgd_survey_backup') || '[]');
+    backup.push({ ...data, sent: false, error: err.message });
+    localStorage.setItem('fgd_survey_backup', JSON.stringify(backup));
+    btn.textContent = origText;
+    btn.disabled = false;
+    btn.style.opacity = '1';
+    showToast('Mất kết nối — vui lòng tải CSV để gửi thủ công', '');
+    document.querySelector('.btn-export').style.display = 'inline-block';
+  }
+}
+
+// ---- Export CSV — backup thủ công ----
+function exportCSV() {
+  const data = collectData();
+  const backup = JSON.parse(localStorage.getItem('fgd_survey_backup') || '[]');
+  const allData = backup.length > 0 ? backup : [data];
+  const headers = Object.keys(allData[0]);
+  const rows = allData.map(r => headers.map(h => '"' + String(r[h]||'').replace(/"/g,'""') + '"').join(','));
+  const csv = [headers.map(h => '"'+h+'"').join(','), ...rows].join('\n');
+  const blob = new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'FGD_Survey_' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('CSV đã tải xuống!', 'ok');
+}
+</script>
+</body>
+</html>

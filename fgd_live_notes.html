@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FGD Live Notes — Học Cùng AI THPT</title>
+<style>
+:root {
+  --ink: #111;
+  --ink2: #444;
+  --ink3: #888;
+  --line: #e4e4e4;
+  --bg: #f5f5f3;
+  --card: #fff;
+  --accent: #2563eb;
+  --accent-s: #eff6ff;
+  --if-color: #7c3aed;
+  --if-bg: #f5f3ff;
+  --probe-color: #0369a1;
+  --probe-bg: #e0f2fe;
+  --note-color: #065f46;
+  --note-bg: #ecfdf5;
+  --warn-color: #92400e;
+  --warn-bg: #fffbeb;
+  --r: 8px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{font-family:-apple-system,'Segoe UI',sans-serif;font-size:14px;color:var(--ink);display:flex;flex-direction:column;background:var(--bg)}
+
+/* Top bar */
+.topbar{
+  background:var(--ink);color:#fff;
+  padding:10px 20px;
+  display:flex;align-items:center;gap:16px;
+  flex-shrink:0;z-index:100;
+}
+.tb-logo{font-size:11px;opacity:.45;letter-spacing:.06em;flex-shrink:0}
+.tb-title{font-size:13px;font-weight:500}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.tb-timer{font-size:13px;font-family:monospace;background:rgba(255,255,255,.12);padding:4px 12px;border-radius:5px;letter-spacing:.06em}
+.tb-btn{
+  font-size:12px;padding:5px 14px;border-radius:5px;border:none;cursor:pointer;font-family:inherit;font-weight:500;transition:background .12s;
+}
+.tb-btn-start{background:#16a34a;color:#fff}
+.tb-btn-start:hover{background:#15803d}
+.tb-btn-export{background:rgba(255,255,255,.15);color:#fff}
+.tb-btn-export:hover{background:rgba(255,255,255,.25)}
+
+/* Layout */
+.layout{display:flex;flex:1;overflow:hidden}
+.sidebar{
+  width:220px;flex-shrink:0;
+  background:var(--card);
+  border-right:1px solid var(--line);
+  overflow-y:auto;
+  padding:12px 0;
+}
+.main{flex:1;overflow-y:auto;padding:20px 24px}
+
+/* Sidebar nav */
+.sb-section{padding:6px 16px 4px;font-size:10px;letter-spacing:.08em;color:var(--ink3);font-weight:600;text-transform:uppercase}
+.sb-item{
+  padding:7px 16px;font-size:13px;color:var(--ink2);
+  cursor:pointer;border-left:2px solid transparent;
+  transition:all .1s;display:flex;align-items:center;gap:8px;
+  user-select:none;
+}
+.sb-item:hover{background:var(--bg);color:var(--ink)}
+.sb-item.active{background:var(--accent-s);color:var(--accent);border-left-color:var(--accent)}
+.sb-dot{width:6px;height:6px;border-radius:50%;background:var(--line);flex-shrink:0;transition:background .15s}
+.sb-item.done .sb-dot{background:#16a34a}
+.sb-item.active .sb-dot{background:var(--accent)}
+.sb-time{margin-left:auto;font-size:10px;color:var(--ink3)}
+
+/* Page sections */
+.page-section{display:none}
+.page-section.active{display:block}
+
+/* Question card */
+.q-wrap{margin-bottom:16px}
+.q-card{
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:var(--r);
+  overflow:hidden;
+}
+.q-head{
+  padding:13px 16px;
+  display:flex;align-items:flex-start;gap:12px;
+  cursor:pointer;
+}
+.q-head:hover{background:var(--bg)}
+.q-badge{
+  font-size:10px;font-weight:700;padding:2px 7px;border-radius:3px;
+  background:var(--accent-s);color:var(--accent);flex-shrink:0;margin-top:2px;
+  letter-spacing:.04em;
+}
+.q-intent{font-size:10px;letter-spacing:.05em;color:var(--ink3);margin-bottom:3px;text-transform:uppercase}
+.q-text{font-size:13.5px;color:var(--ink);line-height:1.55;font-weight:500}
+.q-expand{margin-left:auto;font-size:12px;color:var(--ink3);transition:transform .15s;flex-shrink:0}
+.q-expand.open{transform:rotate(180deg)}
+
+.q-body{
+  border-top:1px solid var(--line);
+  padding:14px 16px;
+  display:none;
+}
+.q-body.open{display:block}
+
+/* Follow-ups */
+.fu-list{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.fu-item{display:flex;gap:8px;align-items:flex-start;padding:8px 10px;border-radius:6px}
+.fu-item.if{background:var(--if-bg)}
+.fu-item.probe{background:var(--probe-bg)}
+.fu-tag{font-size:10px;font-weight:700;padding:1px 6px;border-radius:3px;flex-shrink:0;margin-top:1px;white-space:nowrap}
+.fu-tag.if{background:var(--if-color);color:#fff}
+.fu-tag.probe{background:var(--probe-color);color:#fff}
+.fu-text{font-size:12.5px;line-height:1.5;color:var(--ink2)}
+
+/* Note area */
+.note-label{font-size:11px;font-weight:600;color:var(--ink3);margin-bottom:5px;display:flex;align-items:center;gap:6px;text-transform:uppercase;letter-spacing:.05em}
+.note-label span{font-weight:400;color:var(--ink3);font-size:10px;text-transform:none;letter-spacing:0}
+textarea.note{
+  width:100%;border:1px solid var(--line);border-radius:6px;
+  font-family:inherit;font-size:13px;color:var(--ink);
+  background:#fdfdfc;resize:none;padding:9px 12px;
+  line-height:1.6;transition:border-color .15s;
+  height:90px;
+}
+textarea.note:focus{outline:none;border-color:#93c5fd;background:#fff}
+textarea.note::placeholder{color:#bbb}
+
+/* Info boxes */
+.tip{padding:9px 12px;border-radius:6px;margin-bottom:12px;font-size:12.5px;line-height:1.55}
+.tip.info{background:var(--probe-bg);color:var(--probe-color)}
+.tip.warn{background:var(--warn-bg);color:var(--warn-color)}
+.tip.ok{background:var(--note-bg);color:var(--note-color)}
+
+/* Section header in main */
+.section-title{
+  font-size:17px;font-weight:600;color:var(--ink);
+  margin-bottom:4px;
+}
+.section-meta{font-size:12px;color:var(--ink3);margin-bottom:20px;display:flex;align-items:center;gap:12px}
+.meta-time{background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:2px 8px;font-size:11px;color:var(--ink2)}
+
+/* Overall notes */
+.overall-note{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px}
+.overall-note textarea{height:120px}
+
+/* Done button */
+.mark-done{
+  float:right;font-size:11px;padding:4px 12px;border:none;border-radius:4px;
+  background:var(--bg);color:var(--ink3);cursor:pointer;font-family:inherit;
+  transition:all .12s;
+}
+.mark-done:hover{background:#dcfce7;color:#16a34a}
+.mark-done.done{background:#dcfce7;color:#16a34a}
+
+/* Export modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;align-items:center;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal{background:var(--card);border-radius:12px;padding:28px 32px;max-width:520px;width:90%;max-height:80vh;overflow-y:auto}
+.modal h2{font-size:17px;font-weight:600;margin-bottom:6px}
+.modal p{font-size:13px;color:var(--ink2);margin-bottom:20px}
+.modal .export-preview{
+  background:var(--bg);border:1px solid var(--line);border-radius:6px;
+  padding:12px;font-size:11px;font-family:monospace;color:var(--ink2);
+  max-height:200px;overflow-y:auto;white-space:pre-wrap;margin-bottom:16px;
+}
+.modal-btns{display:flex;gap:10px;flex-wrap:wrap}
+.btn-primary{padding:9px 20px;background:var(--accent);color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+.btn-primary:hover{background:#1d4ed8}
+.btn-sec{padding:9px 20px;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:6px;font-size:13px;cursor:pointer;font-family:inherit}
+.btn-sec:hover{background:#e5e5e5}
+
+.toast{position:fixed;bottom:20px;right:20px;background:var(--ink);color:#fff;padding:10px 18px;border-radius:6px;font-size:12px;opacity:0;transform:translateY(6px);transition:all .2s;pointer-events:none;z-index:300}
+.toast.show{opacity:1;transform:translateY(0)}
+.toast.ok{background:#16a34a}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div>
+    <div class="tb-logo">LEARNERIS · FGD TOOL</div>
+    <div class="tb-title">Ghi chép FGD — Giáo viên THPT · Năm học 2025–2026</div>
+  </div>
+  <div class="tb-right">
+    <div class="tb-timer" id="timerDisplay">00:00</div>
+    <button class="tb-btn tb-btn-start" id="timerBtn" onclick="toggleTimer()">Bắt đầu</button>
+    <button class="tb-btn tb-btn-export" onclick="showExport()">Xuất báo cáo</button>
+  </div>
+</div>
+
+<div class="layout">
+  <div class="sidebar" id="sidebar">
+    <div class="sb-section">Điều hướng</div>
+    <div class="sb-item active" data-sec="s0" onclick="navTo('s0')"><div class="sb-dot"></div>Mở đầu<span class="sb-time">5'</span></div>
+    <div class="sb-item" data-sec="s1" onclick="navTo('s1')"><div class="sb-dot"></div>Nội dung CT<span class="sb-time">20'</span></div>
+    <div class="sb-item" data-sec="s2" onclick="navTo('s2')"><div class="sb-dot"></div>Nền tảng<span class="sb-time">20'</span></div>
+    <div class="sb-item" data-sec="s3" onclick="navTo('s3')"><div class="sb-dot"></div>Học sinh<span class="sb-time">15'</span></div>
+    <div class="sb-item" data-sec="s4" onclick="navTo('s4')"><div class="sb-dot"></div>Nhìn lại<span class="sb-time">10'</span></div>
+    <div class="sb-item" data-sec="s5" onclick="navTo('s5')"><div class="sb-dot"></div>Kết thúc<span class="sb-time">5'</span></div>
+
+    <div class="sb-section" style="margin-top:12px">Ghi nhanh</div>
+    <div style="padding:8px 12px">
+      <textarea id="quickNote" style="width:100%;height:80px;border:1px solid var(--line);border-radius:6px;padding:8px;font-family:inherit;font-size:12px;resize:none;background:#fdfdfc;color:var(--ink)" placeholder="Ghi nhanh điều cần nhớ…"></textarea>
+    </div>
+    <div style="padding:0 12px">
+      <div class="sb-section" style="padding-left:0;margin-bottom:6px">Tham gia</div>
+      <div id="participantList" style="display:flex;flex-direction:column;gap:4px"></div>
+      <input id="pInput" style="width:100%;margin-top:6px;padding:5px 8px;border:1px solid var(--line);border-radius:5px;font-size:12px;font-family:inherit" placeholder="Thêm tên GV…" onkeydown="if(event.key==='Enter')addParticipant()">
+    </div>
+  </div>
+
+  <div class="main" id="mainArea">
+
+    <!-- S0: Mở đầu -->
+    <div class="page-section active" id="s0">
+      <div class="section-title">Mở đầu <span style="font-weight:400;color:var(--ink3)">·</span> Icebreaker</div>
+      <div class="section-meta"><span class="meta-time">⏱ 5 phút</span> Tạo không khí thoải mái, nghe ngóng điểm nổi bật ban đầu</div>
+
+      <div class="tip ok">Giải thích ngắn trước khi bắt đầu: <em>"Mình muốn nghe thật sự từ thầy/cô sau một năm dạy thử — không có câu trả lời đúng sai, không ảnh hưởng đến công việc. Buổi này để đội thiết kế học từ thực tế."</em></div>
+
+      <div class="q-wrap">
+        <div class="q-card">
+          <div class="q-head" onclick="toggleQ(this)">
+            <div class="q-badge">ICE</div>
+            <div><div class="q-intent">Icebreaker — Khởi động</div>
+            <div class="q-text">Từ hồi đầu năm đến giờ, thầy/cô dạy được bao nhiêu tiết rồi? Tiết nào nhớ nhất — dù vì lý do gì cũng được?</div></div>
+            <div class="q-expand">▾</div>
+          </div>
+          <div class="q-body">
+            <div class="fu-list">
+              <div class="fu-item probe"><div class="fu-tag probe">Hỏi thêm</div><div class="fu-text">Tiết đó đáng nhớ vì học sinh phản ứng thế nào, hay vì thầy/cô thấy khó / dễ dạy hơn những tiết khác?</div></div>
+            </div>
+            <div class="note-label">Ghi chú <span>— ai nói gì, điểm nổi bật</span></div>
+            <textarea class="note" data-key="s0_ice" placeholder="…"></textarea>
+          </div>
+        </div>
+      </div>
+      <button class="mark-done" onclick="markDone('s0',this)">Xong phần này ✓</button>
+    </div>
+
+    <!-- S1: Nội dung CT -->
+    <div class="page-section" id="s1">
+      <div class="section-title">Phần A — Nội dung chương trình</div>
+      <div class="section-meta"><span class="meta-time">⏱ 20 phút</span> Tiêu chuẩn, độ khó, thời lượng, format, assessment, chất lượng đầu ra</div>
+      <div class="tip info">Trước phần này: chia sẻ kết quả ranking C1 từ screening survey để mở đầu — <em>"Survey cho thấy thầy/cô xếp X là chủ đề học sinh tiếp nhận tốt nhất, Y là khó nhất. Mình muốn đi sâu hơn vào điều đó."</em></div>
+
+      <div class="q-wrap">
+        <div class="q-card">
+          <div class="q-head" onclick="toggleQ(this)">
+            <div class="q-badge">A1</div>
+            <div><div class="q-intent">Tiêu chuẩn & độ rõ mục tiêu</div>
+            <div class="q-text">Khi đọc mục tiêu bài học, thầy/cô biết ngay học sinh cần làm được gì sau tiết đó không — hay phải tự diễn giải thêm?</div></div>
+            <div class="q-expand">▾</div>
+          </div>
+          <div class="q-body">
+            <div class="fu-list">
+              <div class="fu-item probe"><div class="fu-tag probe">Hỏi thêm</div><div class="fu-text">Thầy/cô lấy ví dụ một bài cụ thể — mục tiêu được viết thế nào trong tài liệu?</div></div>
+              <div class="fu-item if"><div class="fu-tag if">Nếu không rõ</div><div class="fu-text">Khi mục tiêu chưa rõ, thầy/cô thường làm gì — bỏ qua, tự đặt lại, hay hỏi ai?</div></div>
+              <div class="fu-item probe"><div class="fu-tag probe">Hỏi thêm</div><div class="fu-text">Có bài nào mà dạy xong rồi vẫn không biết chắc học sinh đã "đạt" hay chưa không?</div></div>
+            </div>
+            <div class="note-label">Ghi chú</div>
+            <textarea class="note" data-key="s1_a1" placeholder="…"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="q-wrap">
+        <div class="q-card">
+          <div class="q-head" onclick="toggleQ(this)">
+            <div class="q-badge">A2</div>
+            <div><div class="q-intent">Độ khó & phù hợp lứa tuổi</div>
+            <div class="q-text">Nhìn lại cả năm học, có chủ đề nào thầy/cô phải giải thích lại nhiều lần, hoặc phải đơn giản hóa đáng kể so với tài liệu gốc không?</div></div>
+            <div class="q-expand">▾</div>
+          </div>
+          <div class="q-body">
+            <div class="fu-list">
+              <div class="fu-item probe"><div class="fu-tag probe">Hỏi thêm</div><div class="fu-text">Thầy/cô đơn giản hóa bằng cách nào — bỏ phần nào, thay ví dụ, hay giải thích theo cách khác?</div></div>
+              <div class="fu-item if"><div class="fu-tag if">Nếu có</div><div class="fu-text">Sau khi đơn giản hóa, học sinh có hiểu đúng bản chất khái niệm không, hay bị hiểu nhầm theo hướng nào đó?</div></div>
+              <div class="fu-item if"><div class="fu-tag if">Nếu không</div><div class="fu-text">Vậy thầy/cô thấy mức độ khó tổng thể là phù hợp, hay có bài lại quá đơn giản với học sinh?</div></div>
+            </div>
+            <div class="note-label">Ghi chú</div>
+            <textarea class="note" data-key="s1_a2" placeholder="…"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="q-wrap">
+        <div class="q-card">
+          <div class="q-head" onclick="toggleQ(this)">
+            <div class="q-badge">A3</div>
+            <div><div class="q-intent">Thời lượng & nhịp dạy thực tế</div>
+            <div class="q-text">Trong một tiết 45 phút, thầy/cô thường kịp dạy đến đâu trong lesson plan? Phần nào hay bị cắt hoặc rút ngắn nhất?</div></div>
+            <div class="q-expand">▾</div>
+          </div>
+          <div class="q-body">
+            <div class="fu-list">
+              <div class="fu-item probe"><div class="fu-tag probe">Hỏi thêm</div><div class="fu-text">Phần bị cắt thường là lý thuyết, thực hành, hay phần kết / đánh giá cuối tiết?</div></div>
+              <div class="fu-item if"><div class="fu-tag if">Nếu hay bị cắt</div><div class="fu-text">Khi bỏ phần đó, thầy/cô thấy học sinh có bị thiếu hụt gì không?</div></div>
+            </div>
+            <div class="note-label">Ghi chú</div>
+            <textarea class="note" data-key="s1_a3" placeholder="…"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="q-wrap">
+        <div class="q-card">
+          <div class="q-head" onclick="toggleQ(this)">
+            <div class="q-badge">A4</div>
+            <div><div class="q-intent">Format tài liệu — docx/pptx vs HTML</div>
+            <div class="q-text">Nửa đầu là Word/PowerPoint truyền thống, nửa sau là HTML tương tác. Thầy/cô thấy sự khác biệt đó ảnh hưởng đến việc dạy như thế nào — cả từ phía thầy/cô lẫn học sinh?</div></div>
+            <div class="q-expand">▾</div>
+          </div>
+          <div class="q-body">
+            <div class="fu-list">
+              <div class="fu-item probe"><div class="fu-tag probe">Hỏi thêm</div><div class="fu-text">Về phía thầy/cô chuẩn bị bài — format nào tiện hơn khi đọc và theo dõi trên bục giảng?</div></div>
+              <div class="fu-item probe"><div class="fu-tag probe">Hỏi thêm</div><div class="fu-text">Về phía học sinh — các em tương tác với 2 loại format đó khác nhau như thế nào thầy/cô quan sát thấy?</div></div>
+              <div class="fu-item if"><div class="fu-tag if">Nếu thích HTML</div><div class="fu-text">Có tính năng nào trong HTML mà thầy/cô muốn áp dụng ngược lại cho nửa đầu không?</div></div>
+              <div class="fu-item if"><div class="fu-tag if">Nếu thích DOCX</div><div class="fu-text">Điều gì cụ thể khiến format truyền thống dễ dùng hơn trong ngữ cảnh lớp học của thầy/cô?</div></div>
+            </div>
+            <div class="note-label">Ghi chú</div>
+            <textarea class="note" data-key="s1_a4" placeholder="…"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="q-wrap">
+        <div class="q-card">
+          <div class="q-head" onclick="toggleQ(this)">
+            <div class="q-badge">A5</div>
+            <div><div class="q-intent">Assessment — cách dùng thực tế</div>
+            <div class="q-text">Bài kiểm tra và worksheet — thầy/cô dùng chúng để làm gì chính? Chấm điểm, luyện tập, hay để mình xem học sinh hiểu đến đâu?</div></div>
+            <div class="q-expand">▾</div>
+          </div>
+          <div class="q-body">
+            <div class="fu-list">
+              <div class="fu-item probe"><div class="fu-tag probe">Hỏi thêm</div><div class="fu-text">Quiz tự chấm điểm trên Learneris — thầy/cô có xem kết quả sau đó không? Kết quả đó có giúp ích gì cho tiết dạy tiếp theo không?</div></div>
+              <div class="fu-item probe"><div class="fu-tag probe">Hỏi thêm</div><div class="fu-text">Có câu hỏi nào mà học sinh trả lời đúng nhưng thầy/cô nghi là các em đoán mò hoặc chưa thật sự hiểu không?</div></div>
+              <div class="fu-item if"><div class="fu-tag if">Nếu ít dùng</div><div class="fu-text">Thầy/cô thường đánh giá mức độ hiểu của học sinh bằng cách nào khác trong tiết?</div></div>
+            </div>
+            <div class="note-label">Ghi chú</div>
+            <textarea class="note" data-key="s1_a5" placeholder="…"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="q-wrap">
+        <div class="q-card">
+          <div class="q-head" onclick="toggleQ(this)">
+            <div class="q-badge">A6</div>
+            <div><div class="q-intent">Chất lượng sản phẩm đầu ra của học sinh</div>
+            <div class="q-text">Nhìn vào các bài làm học sinh nộp trong năm — chất lượng trung bình ở mức nào? Có điểm yếu nào lặp đi lặp lại không?</div></div>
+            <div class="q-expand">▾</div>
+          </div>
+          <div class="q-body">
+            <div class="fu-list">
+              <div class="fu-item probe"><div class="fu-tag probe">Hỏi thêm</div><div class="fu-text">Dự án hay sản phẩm cuối module — học sinh thường mắc lỗi ở đâu nhất? Do thiếu kiến thức, hay thiếu kỹ năng thực hành?</div></div>
+              <div class="fu-item probe"><div class="fu-tag probe">Hỏi thêm</div><div class="fu-text">Chấm các bài có tính sáng tạo — vd thiết kế ý tưởng AI — thầy/cô thấy tiêu chí đánh giá có đủ rõ không?</div></div>
+            </div>
+            <div class="note-label">Ghi chú</div>
+            <textarea class="note" data-key="s1_a6" placeholder="…"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="overall-note">
+        <div class="note-label">Ghi chú tổng — Phần A</div>
+        <textarea class="note" data-key="s1_overall" placeholder="Nhận xét chung, điểm nổi bật, chủ đề lặp lại giữa các giáo viên…" style="height:100px"></textarea>
+      </div>
+      <br>
+      <button class="mark-done" onclick="markDone('s1',this)">Xong phần này ✓</button>
+    </div>
+
+    <!-- S2: Nền tảng -->
+    <div class="page-section" id="s2">
+      <div class="section-title">Phần B — Nền tảng Learneris</div>
+      <div class="section-meta"><span class="meta-time">⏱ 20 phút</span> Trải nghiệm vận hành, sự cố, hỗ trợ, giá trị thực sự</div>
+      <div class="tip warn">Lưu ý: Phần này dễ đi vào "danh sách lỗi". Cố hướng câu hỏi về tác động đến việc dạy, không chỉ liệt kê sự cố kỹ thuật.</div>
+
+      <div class="q-wrap">
+        <div class="q-card">
+          <div class="q-head" onclick="toggleQ(this)">
+            <div class="q-badge">B1</div>
+            <div><div class="q-intent">Pattern sử dụng hàng ngày</div>
+            <div class="q-text">Trong một tuần dạy bình thường, thầy/cô mở Learneris để làm những việc gì? Thao tác nào thầy/cô làm quen và tự tin nhất?</div></div>
+            <div class="q-expand">▾</div>
+          </div>
+          <div class="q-body">
+            <div class="fu-list">
+              <div class="fu-item probe"><div class="fu-tag probe">Hỏi thêm</div><div class="fu-text">Có tính năng nào thầy/cô biết là có nhưng chưa bao giờ dùng — vì không cần hay vì không biết dùng thế nào?</div></div>
+            </div>
+            <div class="note-label">Ghi chú</div>
+            <textarea class="note" data-key="s2_b1" placeholder="…"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="q-wrap">
+        <div class="q-card">
+          <div class="q-head" onclick="toggleQ(this)">
+            <div class="q-badge">B2</div>
+            <div><div class="q-intent">Thời gian setup thực tế</div>
+            <div class="q-text">Tính từ lúc thầy/cô vào Learneris chuẩn bị cho tiết học đến khi học sinh bắt đầu làm bài — thường mất bao lâu? Bước nào tốn thời gian nhất?</div></div>
+            <div class="q-expand">▾</div>
+          </div>
+          <div class="q-body">
+            <div class="fu-list">
+              <div class="fu-item if"><div class="fu-tag if">Nếu mất lâu</div><div class="fu-text">Thầy/cô có thử cách nào để rút ngắn chưa — vd chuẩn bị trước hoặc nhờ ai hỗ trợ?</div></div>
+            </div>
+            <div class="note-label">Ghi chú</div>
+            <textarea class="note" data-key="s2_b2" placeholder="…"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="q-wrap">
+        <div class="q-card">
+          <div class="q-head" onclick="toggleQ(this)">
+            <div class="q-badge">B3</div>
+            <div><div class="q-intent">Sự cố & tác động lên lớp học</div>
+            <div class="q-text">Kể về một lần nền tảng gặp vấn đề ngay trong giờ học — thầy/cô xử lý tình huống đó như thế nào?</div></div>
+            <div class="q-expand">▾</div>
+          </div>
+          <div class="q-body">
+            <div class="fu-list">
+              <div class="fu-item probe"><div class="fu-tag probe">Hỏi thêm</div><div class="fu-text">Sự cố đó ảnh hưởng đến tâm lý thầy/cô và học sinh thế nào — có mất động lực hoặc thời gian không thể lấy lại không?</div></div>
+              <div class="fu-item probe"><div class="fu-tag probe">Hỏi thêm</div><div class="fu-text">Sau đó thầy/cô có báo cáo với ai không? Và nhận được hỗ trợ không?</div></div>
+              <div class="fu-item if"><div class="fu-tag if">Nếu không có sự cố</div><div class="fu-text">Điều gì giúp mọi thứ vận hành trơn — cách thầy/cô chuẩn bị, hay nền tảng thực sự ổn định?</div></div>
+            </div>
+            <div class="note-label">Ghi chú</div>
+            <textarea class="note" data-key="s2_b3" placeholder="…"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="q-wrap">
+        <div class="q-card">
+          <div class="q-head" onclick="toggleQ(this)">
+            <div class="q-badge">B4</div>
+            <div><div class="q-intent">Chất lượng hỗ trợ kỹ thuật</div>
+            <div class="q-text">Khi gặp khó khăn với nền tảng hoặc tài liệu, thầy/cô thường tìm đến đâu? Phản hồi nhận được nhanh không?</div></div>
+            <div class="q-expand">▾</div>
+          </div>
+          <div class="q-body">
+            <div class="fu-list">
+              <div class="fu-item probe"><div class="fu-tag probe">Hỏi thêm</div><div class="fu-text">Có lần nào hỏi mà không nhận được phản hồi đủ nhanh và phải tự xoay sở không?</div></div>
+              <div class="fu-item if"><div class="fu-tag if">Nếu hỗ trợ tốt</div><div class="fu-text">Điều gì cụ thể làm thầy/cô cảm thấy được đồng hành tốt — cách trả lời, tốc độ, hay cách giải thích?</div></div>
+            </div>
+            <div class="note-label">Ghi chú</div>
+            <textarea class="note" data-key="s2_b4" placeholder="…"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="q-wrap">
+        <div class="q-card">
+          <div class="q-head" onclick="toggleQ(this)">
+            <div class="q-badge">B5</div>
+            <div><div class="q-intent">Giá trị thực sự so với dạy truyền thống</div>
+            <div class="q-text">So với dạy theo kiểu truyền thống — sách, bảng, PowerPoint bình thường — Learneris giúp ích thầy/cô ở đâu, và tạo thêm công việc ở đâu?</div></div>
+            <div class="q-expand">▾</div>
+          </div>
+          <div class="q-body">
+            <div class="fu-list">
+              <div class="fu-item probe"><div class="fu-tag probe">Hỏi thêm</div><div class="fu-text">Nếu bỏ đi một tính năng của Learneris mà thầy/cô sẽ không thiếu gì cả — tính năng đó là gì?</div></div>
+              <div class="fu-item probe"><div class="fu-tag probe">Hỏi thêm</div><div class="fu-text">Ngược lại, nếu mất đi một tính năng thầy/cô sẽ thực sự bất tiện — tính năng đó là gì?</div></div>
+            </div>
+            <div class="note-label">Ghi chú</div>
+            <textarea class="note" data-key="s2_b5" placeholder="…"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="overall-note">
+        <div class="note-label">Ghi chú tổng — Phần B</div>
+        <textarea class="note" data-key="s2_overall" placeholder="…" style="height:100px"></textarea>
+      </div>
+      <br>
+      <button class="mark-done" onclick="markDone('s2',this)">Xong phần này ✓</button>
+    </div>
+
+    <!-- S3: Học sinh -->
+    <div class="page-section" id="s3">
+      <div class="section-title">Phần C — Học sinh</div>
+      <div class="section-meta"><span class="meta-time">⏱ 15 phút</span> Phản ứng thực tế, khoảng cách giữa các nhóm, chuyển hóa kiến thức</div>
+
+      <div class="q-wrap">
+        <div class="q-card">
+          <div class="q-head" onclick="toggleQ(this)">
+            <div class="q-badge">C1</div>
+            <div><div class="q-intent">Phản ứng thực tế trong lớp — so sánh</div>
+            <div class="q-text">Mô tả một tiết học mà thầy/cô thấy học sinh thực sự vào cuộc — biểu hiện cụ thể thế nào? Rồi mô tả một tiết ngược lại.</div></div>
+            <div class="q-expand">▾</div>
+          </div>
+          <div class="q-body">
+            <div class="fu-list">
+              <div class="fu-item probe"><div class="fu-tag probe">Hỏi thêm</div><div class="fu-text">Tiết "vào cuộc" đó có gì đặc biệt — về nội dung, cách tổ chức, hay công cụ sử dụng?</div></div>
+              <div class="fu-item probe"><div class="fu-tag probe">Hỏi thêm</div><div class="fu-text">Tiết "chết" đó — thầy/cô có điều chỉnh gì trong tiết học không, hay tiếp tục theo kế hoạch?</div></div>
+            </div>
+            <div class="note-label">Ghi chú</div>
+            <textarea class="note" data-key="s3_c1" placeholder="…"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="q-wrap">
+        <div class="q-card">
+          <div class="q-head" onclick="toggleQ(this)">
+            <div class="q-badge">C2</div>
+            <div><div class="q-intent">Khoảng cách giữa các nhóm học sinh</div>
+            <div class="q-text">Trong lớp, có khoảng cách rõ ràng giữa các nhóm học sinh về mức độ tiến bộ không? Điều gì thầy/cô nghĩ tạo ra khoảng cách đó?</div></div>
+            <div class="q-expand">▾</div>
+          </div>
+          <div class="q-body">
+            <div class="fu-list">
+              <div class="fu-item probe"><div class="fu-tag probe">Hỏi thêm</div><div class="fu-text">Thầy/cô đã thử cách nào để thu hẹp khoảng cách đó — và hiệu quả thế nào?</div></div>
+              <div class="fu-item if"><div class="fu-tag if">Nếu khoảng cách lớn</div><div class="fu-text">Tài liệu hoặc nền tảng có công cụ nào hỗ trợ học sinh yếu hơn không, hay thầy/cô phải tự tìm cách?</div></div>
+            </div>
+            <div class="note-label">Ghi chú</div>
+            <textarea class="note" data-key="s3_c2" placeholder="…"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="q-wrap">
+        <div class="q-card">
+          <div class="q-head" onclick="toggleQ(this)">
+            <div class="q-badge">C3</div>
+            <div><div class="q-intent">Chuyển hóa kiến thức ra ngoài lớp</div>
+            <div class="q-text">Thầy/cô có nghe học sinh nhắc đến AI trong ngữ cảnh ngoài giờ học AI không — trong môn khác, ở nhà, hay trong cuộc sống?</div></div>
+            <div class="q-expand">▾</div>
+          </div>
+          <div class="q-body">
+            <div class="fu-list">
+              <div class="fu-item probe"><div class="fu-tag probe">Hỏi thêm</div><div class="fu-text">Thầy/cô có ví dụ cụ thể không — dù nhỏ cũng được?</div></div>
+              <div class="fu-item if"><div class="fu-tag if">Nếu không quan sát thấy</div><div class="fu-text">Thầy/cô nghĩ tại sao — vì kiến thức chưa đủ sâu, hay học sinh chưa thấy cơ hội áp dụng?</div></div>
+            </div>
+            <div class="note-label">Ghi chú</div>
+            <textarea class="note" data-key="s3_c3" placeholder="…"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="overall-note">
+        <div class="note-label">Ghi chú tổng — Phần C</div>
+        <textarea class="note" data-key="s3_overall" placeholder="…" style="height:100px"></textarea>
+      </div>
+      <br>
+      <button class="mark-done" onclick="markDone('s3',this)">Xong phần này ✓</button>
+    </div>
+
+    <!-- S4: Nhìn lại -->
+    <div class="page-section" id="s4">
+      <div class="section-title">Phần D — Nhìn lại &amp; Đề xuất</div>
+      <div class="section-meta"><span class="meta-time">⏱ 10 phút</span> What worked, what didn't, ưu tiên cho năm 2</div>
+
+      <div class="q-wrap">
+        <div class="q-card">
+          <div class="q-head" onclick="toggleQ(this)">
+            <div class="q-badge">D1</div>
+            <div><div class="q-intent">Điều chương trình làm đúng nhất</div>
+            <div class="q-text">Nếu phải chọn 1 thứ mà thầy/cô thấy chương trình này làm tốt — điều đó là gì?</div></div>
+            <div class="q-expand">▾</div>
+          </div>
+          <div class="q-body">
+            <div class="fu-list">
+              <div class="fu-item probe"><div class="fu-tag probe">Hỏi thêm</div><div class="fu-text">Tại sao điều đó quan trọng với thầy/cô — nó ảnh hưởng đến việc dạy thế nào?</div></div>
+            </div>
+            <div class="note-label">Ghi chú</div>
+            <textarea class="note" data-key="s4_d1" placeholder="…"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="q-wrap">
+        <div class="q-card">
+          <div class="q-head" onclick="toggleQ(this)">
+            <div class="q-badge">D2</div>
+            <div><div class="q-intent">Cảnh báo cho giáo viên mới</div>
+            <div class="q-text">Nếu năm sau chương trình mở rộng sang trường khác, có điều gì thầy/cô muốn cảnh báo giáo viên mới trước khi họ bắt đầu?</div></div>
+            <div class="q-expand">▾</div>
+          </div>
+          <div class="q-body">
+            <div class="fu-list">
+              <div class="fu-item probe"><div class="fu-tag probe">Hỏi thêm</div><div class="fu-text">Điều đó có thể tránh được nếu Learneris hoặc ban tổ chức làm khác đi không — hay nó thuộc về bản chất của môn học này?</div></div>
+            </div>
+            <div class="note-label">Ghi chú</div>
+            <textarea class="note" data-key="s4_d2" placeholder="…"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="q-wrap">
+        <div class="q-card">
+          <div class="q-head" onclick="toggleQ(this)">
+            <div class="q-badge">D3</div>
+            <div><div class="q-intent">Ưu tiên cải tiến — năm học tiếp theo</div>
+            <div class="q-text">Nếu Learneris có 3 tháng để cải thiện chương trình trước năm học tới, thầy/cô muốn 3 tháng đó tập trung vào đâu nhất?</div></div>
+            <div class="q-expand">▾</div>
+          </div>
+          <div class="q-body">
+            <div class="fu-list">
+              <div class="fu-item probe"><div class="fu-tag probe">Hỏi thêm</div><div class="fu-text">Ưu tiên đó xuất phát từ đâu — thầy/cô thấy khó, học sinh thấy khó, hay thiếu công cụ?</div></div>
+            </div>
+            <div class="note-label">Ghi chú</div>
+            <textarea class="note" data-key="s4_d3" placeholder="…"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="q-wrap">
+        <div class="q-card">
+          <div class="q-head" onclick="toggleQ(this)">
+            <div class="q-badge">D4</div>
+            <div><div class="q-intent">Câu hỏi mở — không bỏ sót</div>
+            <div class="q-text">Câu cuối — có điều gì thầy/cô muốn nói nhưng chưa được hỏi không?</div></div>
+            <div class="q-expand">▾</div>
+          </div>
+          <div class="q-body">
+            <div class="note-label">Ghi chú</div>
+            <textarea class="note" data-key="s4_d4" placeholder="…"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="overall-note">
+        <div class="note-label">Ghi chú tổng — Phần D</div>
+        <textarea class="note" data-key="s4_overall" placeholder="…" style="height:100px"></textarea>
+      </div>
+      <br>
+      <button class="mark-done" onclick="markDone('s4',this)">Xong phần này ✓</button>
+    </div>
+
+    <!-- S5: Kết thúc -->
+    <div class="page-section" id="s5">
+      <div class="section-title">Kết thúc</div>
+      <div class="section-meta"><span class="meta-time">⏱ 5 phút</span> Cảm ơn và bước tiếp theo</div>
+      <div class="tip ok" style="margin-bottom:16px">Nhắc lại: dữ liệu chỉ dùng nội bộ. Hứa sẽ gửi tóm tắt kết quả cho thầy/cô sau khi phân tích xong — dù chỉ là 1–2 slide ngắn. Gesture nhỏ này quan trọng cho trust.</div>
+      <div class="overall-note">
+        <div class="note-label">Ấn tượng tổng thể &amp; điểm nổi bật cần theo dõi</div>
+        <textarea class="note" data-key="s5_final" placeholder="Tóm lược cảm nhận chung sau buổi FGD…" style="height:140px"></textarea>
+      </div>
+      <br>
+      <div class="overall-note" style="margin-top:12px">
+        <div class="note-label">Action items — việc cần làm sau buổi này</div>
+        <textarea class="note" data-key="s5_actions" placeholder="1. …&#10;2. …&#10;3. …" style="height:100px"></textarea>
+      </div>
+      <br>
+      <button class="mark-done" onclick="markDone('s5',this)">Hoàn thành FGD ✓</button>
+    </div>
+
+  </div><!-- end main -->
+</div><!-- end layout -->
+
+<!-- Export modal -->
+<div class="modal-overlay" id="exportModal">
+  <div class="modal">
+    <h2>Xuất ghi chép FGD</h2>
+    <p>Chọn định dạng phù hợp. Dữ liệu bao gồm tất cả ghi chú đã nhập trong buổi này.</p>
+    <div class="export-preview" id="exportPreview"></div>
+    <div class="modal-btns">
+      <button class="btn-primary" onclick="doExport('txt')">Tải .txt</button>
+      <button class="btn-primary" onclick="doExport('csv')">Tải .csv</button>
+      <button class="btn-sec" onclick="copyNotes()">Sao chép</button>
+      <button class="btn-sec" onclick="closeExport()">Đóng</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ---- Timer ----
+let timerInterval = null, timerSec = 0, running = false;
+function toggleTimer() {
+  const btn = document.getElementById('timerBtn');
+  if (!running) {
+    running = true; btn.textContent = 'Dừng'; btn.style.background='#dc2626';
+    timerInterval = setInterval(() => {
+      timerSec++;
+      const m = String(Math.floor(timerSec/60)).padStart(2,'0');
+      const s = String(timerSec%60).padStart(2,'0');
+      document.getElementById('timerDisplay').textContent = m+':'+s;
+    }, 1000);
+  } else {
+    running = false; clearInterval(timerInterval);
+    btn.textContent = 'Tiếp tục'; btn.style.background='#16a34a';
+  }
+}
+
+// ---- Nav ----
+function navTo(id) {
+  document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.sb-item').forEach(i => i.classList.remove('active'));
+  document.querySelector(`.sb-item[data-sec="${id}"]`).classList.add('active');
+}
+
+// ---- Toggle Q ----
+function toggleQ(head) {
+  const body = head.nextElementSibling;
+  const arrow = head.querySelector('.q-expand');
+  const open = body.classList.contains('open');
+  body.classList.toggle('open', !open);
+  arrow.classList.toggle('open', !open);
+}
+
+// ---- Auto-save notes to sessionStorage ----
+document.addEventListener('input', e => {
+  if (e.target.matches('textarea.note')) {
+    sessionStorage.setItem(e.target.dataset.key, e.target.value);
+  }
+});
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('textarea.note').forEach(t => {
+    const saved = sessionStorage.getItem(t.dataset.key);
+    if (saved) t.value = saved;
+  });
+});
+
+// ---- Mark done ----
+function markDone(secId, btn) {
+  btn.classList.add('done');
+  btn.textContent = '✓ Đã xong';
+  const sbItem = document.querySelector(`.sb-item[data-sec="${secId}"]`);
+  if (sbItem) sbItem.classList.add('done');
+  showToast('Đã đánh dấu hoàn thành!', 'ok');
+}
+
+// ---- Participants ----
+const participants = [];
+function addParticipant() {
+  const inp = document.getElementById('pInput');
+  const name = inp.value.trim();
+  if (!name) return;
+  participants.push(name);
+  inp.value = '';
+  renderParticipants();
+}
+function renderParticipants() {
+  const list = document.getElementById('participantList');
+  list.innerHTML = participants.map((p,i) => `<div style="display:flex;align-items:center;gap:6px;padding:3px 0">
+    <div style="width:20px;height:20px;border-radius:50%;background:#e0e7ff;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;color:#4f46e5;flex-shrink:0">${p[0]}</div>
+    <span style="font-size:12px;color:var(--ink2)">${p}</span>
+  </div>`).join('');
+}
+
+// ---- Collect all notes ----
+function collectNotes() {
+  const out = {};
+  document.querySelectorAll('textarea.note').forEach(t => {
+    if (t.value.trim()) out[t.dataset.key] = t.value.trim();
+  });
+  const quick = document.getElementById('quickNote').value.trim();
+  if (quick) out['quick_notes'] = quick;
+  out['participants'] = participants.join(', ') || '(chưa nhập)';
+  out['duration'] = document.getElementById('timerDisplay').textContent;
+  out['date'] = new Date().toLocaleDateString('vi-VN');
+  return out;
+}
+
+const keyLabels = {
+  s0_ice: 'Mở đầu — Icebreaker',
+  s1_a1: 'A1 — Tiêu chuẩn & mục tiêu bài học',
+  s1_a2: 'A2 — Độ khó & phù hợp lứa tuổi',
+  s1_a3: 'A3 — Thời lượng & nhịp dạy',
+  s1_a4: 'A4 — Format tài liệu',
+  s1_a5: 'A5 — Assessment',
+  s1_a6: 'A6 — Chất lượng sản phẩm HS',
+  s1_overall: 'Tổng — Phần A',
+  s2_b1: 'B1 — Pattern sử dụng',
+  s2_b2: 'B2 — Thời gian setup',
+  s2_b3: 'B3 — Sự cố kỹ thuật',
+  s2_b4: 'B4 — Chất lượng hỗ trợ',
+  s2_b5: 'B5 — Giá trị vs dạy truyền thống',
+  s2_overall: 'Tổng — Phần B',
+  s3_c1: 'C1 — Phản ứng HS trong lớp',
+  s3_c2: 'C2 — Khoảng cách nhóm HS',
+  s3_c3: 'C3 — Chuyển hóa kiến thức',
+  s3_overall: 'Tổng — Phần C',
+  s4_d1: 'D1 — Điểm chương trình làm tốt',
+  s4_d2: 'D2 — Cảnh báo GV mới',
+  s4_d3: 'D3 — Ưu tiên cải tiến năm 2',
+  s4_d4: 'D4 — Câu hỏi mở',
+  s4_overall: 'Tổng — Phần D',
+  s5_final: 'Tổng kết buổi FGD',
+  s5_actions: 'Action items',
+  quick_notes: 'Ghi nhanh',
+  participants: 'Thành phần tham gia',
+  duration: 'Thời lượng buổi',
+  date: 'Ngày'
+};
+
+function buildText(data) {
+  let txt = `FGD GHI CHÉP — HỌC CÙNG AI THPT\n`;
+  txt += `Ngày: ${data.date || ''} | Thời lượng: ${data.duration || ''}\n`;
+  txt += `Tham gia: ${data.participants || ''}\n`;
+  txt += '='.repeat(60) + '\n\n';
+  Object.keys(data).forEach(k => {
+    if (['date','duration','participants'].includes(k)) return;
+    const label = keyLabels[k] || k;
+    txt += `【${label}】\n${data[k]}\n\n`;
+  });
+  return txt;
+}
+
+function showExport() {
+  const data = collectNotes();
+  const preview = buildText(data).slice(0, 800) + (buildText(data).length > 800 ? '\n…(còn tiếp)' : '');
+  document.getElementById('exportPreview').textContent = preview;
+  document.getElementById('exportModal').classList.add('show');
+}
+function closeExport() { document.getElementById('exportModal').classList.remove('show'); }
+
+function doExport(type) {
+  const data = collectNotes();
+  const now = new Date().toISOString().slice(0,10);
+  if (type === 'txt') {
+    const blob = new Blob([buildText(data)], {type:'text/plain;charset=utf-8'});
+    dl(blob, `FGD_Notes_${now}.txt`);
+  } else {
+    const headers = ['Câu hỏi','Ghi chú'];
+    const rows = Object.keys(data).map(k => [keyLabels[k]||k, data[k]]);
+    const csv = [headers, ...rows].map(r => r.map(c => '"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');
+    const blob = new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8'});
+    dl(blob, `FGD_Notes_${now}.csv`);
+  }
+  showToast('Đã tải xuống!', 'ok');
+}
+
+function dl(blob, name) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download=name; a.click();
+  URL.revokeObjectURL(url);
+}
+
+function copyNotes() {
+  navigator.clipboard.writeText(buildText(collectNotes())).then(() => showToast('Đã sao chép!','ok'));
+}
+
+function showToast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'toast show '+(type||'');
+  setTimeout(() => t.className = 'toast', 2500);
+}
+</script>
+</body>
+</html>
