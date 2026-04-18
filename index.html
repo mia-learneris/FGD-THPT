@@ -9,7 +9,7 @@
     --ink: #1a1a1a;
     --ink2: #4a4a4a;
     --ink3: #888;
-    --line: #e0e0e0;
+    --line: #e0e0e0
     --bg: #fafaf8;
     --card: #ffffff;
     --accent: #2563eb;
@@ -646,7 +646,7 @@ async function submitForm() {
   const data = collectData();
   data.id = Date.now();
 
-  if (!SHEET_WEBHOOK_URL || SHEET_WEBHOOK_URL.includes('PASTE_YOUR')) {
+  if (!SHEET_WEBHOOK_URL || SHEET_WEBHOOK_URL.includes('https://script.google.com/macros/s/AKfycbzpn6kevK5f4aY7XFrfcSudWwHKCsS6NEJeBzaW509PZNwtHUpwxS7C7I3xFaGUqq_AGw/exec')) {
     showToast('⚠ Chưa cấu hình webhook URL', '');
     return;
   }
